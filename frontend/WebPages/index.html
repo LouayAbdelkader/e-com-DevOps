@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-Commerce App</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            width: 100%;
+            max-width: 350px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            padding-top: 0;
+        }
+        .toggle-link {
+            color: #0d6efd;
+            cursor: pointer;
+        }
+        img {
+            transition: all .5s;
+        }
+        img:hover {
+            transform: scale(1.1);
+            transition: all .5s;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <!-- Error Message -->
+        <div id="error-message" class="alert alert-danger" style="display: none;" role="alert"></div>
+
+        <!-- Login Form -->
+        <div id="login-form">
+            <div style="text-align: center;">
+                <img src="../Assets/ecom.png" alt="" style="width: 150px; height: 180px;">
+                <h2 class="text-center">Login</h2>
+            </div>            
+            <form id="login">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="login-email" required placeholder="example@gmail.com">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="login-password" required placeholder="Strong password !">
+                </div>
+                <button type="button" class="btn btn-primary w-100" id="login-btn"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+            </form>
+            <div class="text-center mt-3">
+                <p>Don't have an account? <span class="toggle-link" id="signup-link">Sign up</span></p>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signup-form" style="display: none;">
+            <div style="text-align: center;">
+                <img src="../Assets/ecom.png" alt="" style="width: 150px; height: 180px;">
+                <h2 class="text-center">Sign Up</h2>
+            </div>
+            <form id="signup">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="signup-name" required placeholder="Write your full name">
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="signup-email" required placeholder="example@gmail.com">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="signup-password" required placeholder="Strong password !">
+                </div>
+                <button type="button" class="btn btn-primary w-100" id="signup-btn"><i class="bi bi-person-plus-fill"></i> Sign Up</button>
+            </form>
+            <div class="text-center mt-3">
+                <p>Already have an account? <span class="toggle-link" id="login-link">Login</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+   <!-- Signup Form with Input Validation -->
+<script>
+    // Signup AJAX
+    document.getElementById('signup-btn').addEventListener('click', async function () {
+        const username = document.getElementById('signup-name').value;
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+
+        // Basic client-side validation
+        if (!username || !email || !password) {
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-message').innerText = 'Please fill in all fields.';
+            return;
+        }
+
+        document.getElementById('error-message').style.display = 'none'; // Clear previous errors
+
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, email, password }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message);
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('login-form').style.display = 'block';
+            } else {
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').innerText = data.message;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-message').innerText = 'An error occurred. Please try again.';
+        }
+    });
+
+    // Login AJAX with Validation
+    document.getElementById('login-btn').addEventListener('click', async function () {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        // Basic client-side validation
+        if (!email || !password) {
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-message').innerText = 'Please enter both email and password.';
+            return;
+        }
+
+        document.getElementById('error-message').style.display = 'none'; // Clear previous errors
+
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                sessionStorage.setItem('user', JSON.stringify(data.user));
+                console.log(data.user);
+ // Store user data
+                window.location.href = './Home.html'; // Redirect to home page
+            } else {
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').innerText = data.message;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-message').innerText = 'An error occurred. Please try again.';
+        }
+    });
+</script>
+
+</body>
+</html>

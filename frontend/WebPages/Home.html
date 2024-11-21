@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - e-Commerce App</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .product-card {
+            margin: 15px 0;
+        }
+        img {
+            transition: all .5s;height: 190px;width:180px;
+        }
+        img:hover {
+            transform: scale(1.1);
+            transition: all .5s;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">e-Commerce</a>
+            <div class="d-flex">
+                <span class="navbar-text" id="user-name"></span>
+                <a href="cart.html" class="btn btn-outline-info ms-3" id="cart-btn">
+                    <i class="bi bi-cart"></i> Cart <span id="cart-count">0</span>
+                </a>
+                <button class="btn btn-outline-danger ms-3" id="logout-btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Product List -->
+    <div class="container mt-4">
+        <div class="row" id="product-list">
+            <!-- Products will be populated here -->
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+       // Safely get user data from sessionStorage
+const user = sessionStorage.getItem("user");
+console.log(user);
+// Redirect to login if no user is found
+if (!user) {
+    window.location.href = "./index.html";
+} else {
+    // Parse the string into an object
+    const parsedUser = JSON.parse(user);
+
+    // Access the username from the parsed object
+    const user_n = parsedUser.username;
+    document.getElementById("user-name").textContent = `Welcome, ${user_n}`;
+}
+
+// Logout functionality
+document.getElementById("logout-btn").addEventListener("click", function () {
+    sessionStorage.removeItem("user"); // Clear user data
+    sessionStorage.removeItem("cart"); // Clear cart data
+    window.location.href = "./index.html"; // Redirect to login
+});
+
+// Cart functionality
+let cart = JSON.parse(sessionStorage.getItem("cart")) || [];
+document.getElementById("cart-count").textContent = cart.length;
+
+// Fetch and display products
+async function fetchProducts() {
+    try {
+        const response = await fetch('http://localhost:5001/api/products');
+        if (response.ok) {
+            const products = await response.json();
+            displayProducts(products);
+        } else {
+            alert('Failed to load products');
+        }
+    } catch (error) {
+        console.error('Error fetching products:', error);
+    }
+}
+
+function displayProducts(products) {
+    const productListElement = document.getElementById("product-list");
+    productListElement.innerHTML = ''; // Clear existing products
+
+    products.forEach(product => {
+        const productCard = document.createElement("div");
+        productCard.classList.add("col-md-4", "product-card");
+        productCard.innerHTML = `
+            <div class="card">
+                <div style="text-align:center">
+                <img src="${product.imageUrl}" alt="${product.name}">
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">${product.name}</h5>
+                    <p class="card-text">${product.description}</p>
+                    <p class="card-text"><strong>${product.price}DT</strong></p>
+                    <button class="btn btn-primary" onclick="addToCart('${product._id}')">Add to Cart</button>
+                </div>
+            </div>
+        `;
+        productListElement.appendChild(productCard);
+    });
+}
+
+async function addToCart(productId, productName, productPrice, productImage) {
+        // Check if the product is already in the cart
+        let productInCart = cart.find(item => item.productId === productId);
+
+        if (productInCart) {
+            // If the product already exists in the cart, increment the quantity
+            productInCart.quantity += 1;
+        } else {
+            // If the product doesn't exist, add it with quantity 1
+            cart.push({
+                productId,
+                name: productName,
+                price: productPrice,
+                imageUrl: productImage,
+                quantity: 1
+            });
+        }
+
+        // Update the cart count
+        document.getElementById("cart-count").textContent = cart.length;
+
+        // Save the updated cart to sessionStorage
+        sessionStorage.setItem("cart", JSON.stringify(cart));
+
+        // Update the total price
+        updateTotalPrice();
+    }
+
+    // Update total price in the cart
+    function updateTotalPrice() {
+        const totalElement = document.getElementById("cart-total");
+        let total = 0;
+
+        // Calculate the total based on the items in the cart
+        cart.forEach(item => {
+            total += item.price * item.quantity;
+        });
+
+        totalElement.textContent = `${total} DT`;
+    }
+
+    // Load products on page load
+    fetchProducts();
+    </script>
+</body>
+</html>

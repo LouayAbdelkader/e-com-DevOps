@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - e-Commerce App</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .cart-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+
+        .cart-item img {
+            height: 50px;
+            width: 50px;
+            object-fit: cover;
+        }
+
+        .cart-item-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-item-details h5 {
+            margin: 0;
+        }
+
+        .cart-item-details p {
+            margin: 0;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="home.html">e-Commerce</a>
+            <div class="d-flex">
+                <span class="navbar-text" id="user-name"></span>
+                <a href="cart.html" class="btn btn-outline-info ms-3" id="cart-btn">
+                    <i class="bi bi-cart"></i> Cart <span id="cart-count">0</span>
+                </a>
+                <button class="btn btn-outline-danger ms-3" id="logout-btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Cart Items List -->
+    <div class="container mt-4" id="cart-items-list">
+        <!-- Cart items will be populated here -->
+    </div>
+
+    <!-- Cart Total and Checkout -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Total: <span id="cart-total">0 DT</span></h4>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-primary" id="checkout-btn">Proceed to Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Retrieve user and cart data from sessionStorage
+        const user = JSON.parse(sessionStorage.getItem("user"));
+        const cart = JSON.parse(sessionStorage.getItem("cart")) || [];
+
+        // Redirect to login if no user is found
+        if (!user) {
+            window.location.href = "./index.html";
+        } else {
+            document.getElementById("user-name").textContent = `Welcome, ${user.username}`;
+        }
+
+        // Logout functionality
+        document.getElementById("logout-btn").addEventListener("click", function () {
+            sessionStorage.removeItem("user"); // Clear user data
+            sessionStorage.removeItem("cart"); // Clear cart data
+            window.location.href = "./index.html"; // Redirect to login
+        });
+
+        // Display Cart Items
+        function displayCartItems() {
+            const cartItemsList = document.getElementById("cart-items-list");
+            cartItemsList.innerHTML = ''; // Clear the cart list
+
+            if (cart.length === 0) {
+                cartItemsList.innerHTML = `<p>Your cart is empty.</p>`;
+                document.getElementById("cart-total").textContent = '0 DT';
+                return;
+            }
+
+            let total = 0;
+
+            cart.forEach(item => {
+                fetch(`http://localhost:5001/api/products/${item.productId}`)
+                    .then(response => response.json())
+                    .then(product => {
+                        const cartItemElement = document.createElement("div");
+                        cartItemElement.classList.add("cart-item");
+
+                        cartItemElement.innerHTML = `
+                            <div class="cart-item-details">
+                                <img src="${product.imageUrl}" alt="${product.name}">
+                                <div>
+                                    <h5>${product.name}</h5>
+                                    <p>${product.description}</p>
+                                    <p><strong>${product.price} DT</strong></p>
+                                </div>
+                                <button class="btn btn-danger btn-sm" onclick="removeFromCart('${item.productId}')">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        `;
+
+                        cartItemsList.appendChild(cartItemElement);
+                        total += product.price * item.quantity; // Accumulate total price with quantity
+                    })
+                    .catch(error => console.log('Error fetching product details:', error));
+            });
+
+            document.getElementById("cart-total").textContent = `${total} DT`;
+        }
+
+        // Remove Item from Cart
+        function removeFromCart(productId) {
+            const updatedCart = cart.filter(item => item.productId !== productId);
+            sessionStorage.setItem("cart", JSON.stringify(updatedCart)); // Update sessionStorage
+            displayCartItems(); // Refresh cart display
+        }
+
+        // Proceed to checkout (currently just logs to the console)
+        document.getElementById("checkout-btn").addEventListener("click", function () {
+            alert('Proceeding to checkout!');
+            // You can redirect to a checkout page here
+        });
+
+        // Load cart items on page load
+        displayCartItems();
+
+        // Update cart count
+        document.getElementById("cart-count").textContent = cart.length;
+    </script>
+</body>
+
+</html>
