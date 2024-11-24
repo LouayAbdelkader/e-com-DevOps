@@ -1,21 +1,22 @@
-# Utiliser une image Node.js officielle comme image de base
+# Utiliser l'image de base Node.js
 FROM node:16
 
 # Définir le répertoire de travail dans le conteneur
 WORKDIR /usr/src/app
 
-# Copier uniquement package.json et package-lock.json (si présent) pour optimiser le cache
-COPY package*.json ./
+# Copier le fichier package.json et package-lock.json (si existants)
+COPY ./Micro-services/user-service/package*.json ./
 
-# Installer les dépendances à partir de package.json
+# Installer les dépendances
 RUN npm install
 
-# Copier tout le reste des fichiers du projet dans le conteneur
-COPY . .
+# Copier le reste de l'application dans le conteneur
+COPY ./Micro-services/user-service .
 
-# Exposer le port 5000 à l'extérieur du conteneur
+# Exposer le port nécessaire (modifiez en fonction de votre application)
 EXPOSE 5000
 
-# Définir la commande pour démarrer l'application
+# Commande pour démarrer l'application
 CMD ["npm", "start"]
+
 
