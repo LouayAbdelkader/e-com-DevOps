@@ -1,17 +1,21 @@
-# Use an official Node.js runtime as a parent image
+# Utiliser une image Node.js officielle comme image de base
 FROM node:16
 
-# Set the working directory in the container
+# Définir le répertoire de travail dans le conteneur
 WORKDIR /usr/src/app
 
-# Copy the current directory contents into the container at /usr/src/app
-COPY . .
+# Copier uniquement package.json et package-lock.json (si présent) pour optimiser le cache
+COPY package*.json ./
 
-# Install any needed packages specified in package.json
+# Installer les dépendances à partir de package.json
 RUN npm install
 
-# Expose port 5000 to the outside world
+# Copier tout le reste des fichiers du projet dans le conteneur
+COPY . .
+
+# Exposer le port 5000 à l'extérieur du conteneur
 EXPOSE 5000
 
-# Define the command to run your app
+# Définir la commande pour démarrer l'application
 CMD ["npm", "start"]
+
