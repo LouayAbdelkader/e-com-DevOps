@@ -11,7 +11,7 @@ COPY ./package*.json ./
 RUN npm install
 
 # Copier le reste de l'application dans le conteneur
-COPY ./Micro-services/user-service .
+COPY ./user-service .
 
 # Exposer le port nécessaire (modifiez en fonction de votre application)
 EXPOSE 5000
