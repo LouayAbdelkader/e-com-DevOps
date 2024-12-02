@@ -5,7 +5,7 @@ FROM node:16
 WORKDIR /usr/src/app
 
 # Copier le fichier package.json et package-lock.json (si existants)
-COPY ./Micro-services/user-service/package*.json ./
+COPY ./package*.json ./
 
 # Installer les dépendances
 RUN npm install
