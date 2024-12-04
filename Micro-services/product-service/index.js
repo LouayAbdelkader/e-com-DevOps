@@ -10,7 +10,7 @@ app.use(cors()); // Allow requests from other origins (like frontend)
 app.use(express.json());
 
 // Connect to MongoDB (replace with your actual MongoDB URI)
-mongoose.connect('mongodb://localhost:27017/mydatabase')
+mongoose.connect('mongodb://mongo-service:27017/mydatabase')
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log(err));
 
